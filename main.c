@@ -19,7 +19,7 @@ void homepage() {
 
 int main() {
   // text of action
-  
+  homepage();
 
   return 0;
 
