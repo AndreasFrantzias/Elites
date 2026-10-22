@@ -13,7 +13,7 @@ time_t now = time(NULL);
   int minute = localtime(&now)->tm_min;
 */
 // GLOBAL VARIABLES
-char bus_lines[6][60] = {"040 PEIRAIAS - SINTAGMA", "10 TZITZIFIES - XALANDRI", "224 KAISARIANI - EL. VENIZELOY", "250 PANEPISTIMIOUPOLI - ST. EVAGGELISMOS", "550 P. FALIRO - KIFISIA", "608 GALATSI - AKADIMIA - NEKR. ZOGRAFOY"};
+char bus_lines[12][60] = {"040 PEIRAIAS - SINTAGMA", "040 SINTAGMA - PEIRAIAS", "10 TZITZIFIES - XALANDRI", "10 XALANDRI - TZITZIFIES", "224 KAISARIANI - EL. VENIZELOY", "224 EL. VENIZELOY - KAISARIANI", "250 PANEPISTIMIOUPOLI - ST. EVAGGELISMOS", "550 P. FALIRO - KIFISIA", "550 KIFISIA - P. FALIRO", "608 GALATSI - AKADIMIA - NEKR. ZOGRAFOY", "608 NEKR. ZOGRAFOY - AKADIMIA - GALATSI"};
 int*** departures = NULL;
 char*** bus_stops = NULL;
 int bus_indices_040[38];
@@ -265,8 +265,10 @@ void clearScreen()
 void print_bus_lines() {
   printf("\n---------------------------------------------------\n");
   printf("Bus Lines:\n");
-  for (int i=0; i < 7; i++) {
-    printf("%s\n", bus_lines[i]);
+  int indices[6] = {0, 2, 4, 6, 7, 9};
+  for (int i=0; i < 6; i++) {
+    int j = indices[i];
+    printf("%s\n", bus_lines[j]);
   }
   printf("Write the number of the bus line you want to choose.\n");
   printf("OR press 0 to go back.\n");
@@ -298,8 +300,80 @@ void departures_menu() {
     direction = find_direction();
   }
   int bus_index = index_of_bus(bus_choice, direction);
+  switch (bus_index) {
+
+  }
   clearScreen();
   print_departures(bus_index);
+  return ;
+}
+
+
+// FEATURE 2: PRINT ARRIVALS
+
+void print_arrivals(int bus_index, int* bus_indices, int num_stops) {
+  clearScreen();
+  printf("\n---------------------------------------------------\n");
+  printf("%s:\n", bus_lines[bus_index]);
+  int i = 0;
+  while (i < num_stops) {
+    int stop_index = bus_indices[i];
+    printf("%d. %s\n", i+1, bus_stops[stop_index][1]);
+    i++;
+  }
+  printf("Press Enter to go back to the main menu...\n");
+  getchar();getc(stdin);
+  clearScreen();
+  return ;
+}
+
+void arrivals_menu() {
+  clearScreen();
+  print_bus_lines();
+  int bus_choice;
+  scanf("%d", &bus_choice);
+  // go back if 0 is pressed
+  if (bus_choice == 0) return ;
+  int direction = 0;
+  if (bus_choice != 250 && bus_choice != 666) {
+    direction = find_direction();
+  }
+  int bus_index = index_of_bus(bus_choice, direction);
+  switch (bus_index) {
+    case 0:
+      print_arrivals(bus_index, bus_indices_040, 38);
+      break;
+    case 1:
+      print_arrivals(bus_index, bus_indices_040_return, 38);
+      break;
+    case 2:
+      print_arrivals(bus_index, bus_indices_10, 47);
+      break;
+    case 3:
+      print_arrivals(bus_index, bus_indices_10_return, 41);
+      break;
+    case 4:
+      print_arrivals(bus_index, bus_indices_224, 34);
+      break;
+    case 5:
+      print_arrivals(bus_index, bus_indices_224_return, 34);
+      break;
+    case 6:
+      print_arrivals(bus_index, bus_indices_250, 26);
+      break;
+    case 7:
+      print_arrivals(bus_index, bus_indices_550, 56);
+      break;
+    case 8:
+      print_arrivals(bus_index, bus_indices_550_return, 56);
+      break;
+    case 9:
+      print_arrivals(bus_index, bus_indices_608, 41);
+      break;
+    case 10:
+      print_arrivals(bus_index, bus_indices_608_return, 45);
+      break;
+  }
   return ;
 }
 
@@ -326,7 +400,7 @@ void homepage() {
     departures_menu();
     break;
   case 2:
-    // calls arrivals
+    arrivals_menu();
     break;
   case 3:
     // TODO: ENTER YOUR FEATURE FUNCTION HERE
