@@ -11,9 +11,10 @@ time_t now = time(NULL);
   int hour = localtime(&now)->tm_hour;
   int minute = localtime(&now)->tm_min;
 */
-// global variable of the text of the bus lines
+// GLOBAL VARIABLES
 char bus_lines[6][60] = {"040 PEIRAIAS - SINTAGMA", "10 TZITZIFIES - XALANDRI", "224 KAISARIANI - EL. VENIZELOY", "250 PANEPISTIMIOUPOLI - ST. EVAGGELISMOS", "550 P. FALIRO - KIFISIA", "608 GALATSI - AKADIMIA - NEKR. ZOGRAFOY"};
 int*** departures = NULL;
+char*** bus_stops = NULL;
 
 
 // IGNORE THESE FUNCTIONS -> IT JUST PARSES THE INFORMATION
@@ -92,20 +93,67 @@ void free_departures() {
   return ;
 }
 
-char** parse_bus_stops() {
-  char** buslines = malloc(11*sizeof(char*));
-  if (!buslines) {
+void parse_stops() {
+  FILE *fp = fopen("./bus_stops/standalone_stops.txt", "r");
+  if (!fp) {
+    fprintf(stderr, "File Opening Error!\n");
+    exit(1);
+  }
+
+  bus_stops = malloc(366*sizeof(char**));
+  if (!bus_stops) {
     fprintf(stderr, "Memory Allocation Error!\n");
     exit(1);
   }
-  FILE *fp = fopen("./bus_stops/stops_040.txt", "r");
-  if (!fp) {
-    fprintf(stderr, "File Error.\n");
-    exit(1);
+  int i = 0;
+  char* code, *name;
+  while (fscanf(fp, "%s %s", code, name) == 2) {
+    bus_stops[i] = malloc(2*sizeof(char*));
+    if (!bus_stops[i]) {
+      fprintf(stderr, "Memory Allocation Error!\n");
+      exit(1);
+    }
+    bus_stops[i][0] = malloc(60*sizeof(char));
+    if (!bus_stops[i][0]) {
+      fprintf(stderr, "Memory Allocation Error!\n");
+      exit(1);
+    }
+    bus_stops[i][0] = code;
+    bus_stops[i][1] = malloc(60*sizeof(char));
+    if (!bus_stops[i][1]) {
+      fprintf(stderr, "Memory Allocation Error!\n");
+      exit(1);
+    }
+    bus_stops[i][1] = name;
+    i++;
   }
-  int stop_code;
-  char stop_name[80];
-  //while ()
+  bus_stops[i] = malloc(2*sizeof(char*));
+    if (!bus_stops[i]) {
+      fprintf(stderr, "Memory Allocation Error!\n");
+      exit(1);
+    }
+    bus_stops[i][0] = malloc(60*sizeof(char));
+    if (!bus_stops[i][0]) {
+      fprintf(stderr, "Memory Allocation Error!\n");
+      exit(1);
+    }
+    bus_stops[i][0] = code;
+    bus_stops[i][1] = malloc(60*sizeof(char));
+    if (!bus_stops[i][1]) {
+      fprintf(stderr, "Memory Allocation Error!\n");
+      exit(1);
+    }
+    bus_stops[i][1] = name;
+  return ;
+}
+
+void free_bus_stops() {
+  for (int i = 0; i<366; i++) {
+    free(bus_stops[i][1]);
+    free(bus_stops[i][0]);
+    free(bus_stops[i]);
+  }
+  free(bus_stops);
 }
 
 // -- IGNORE END --
@@ -257,11 +305,13 @@ void homepage() {
 int main() {
   // parsing -- ignore
   parse_departures();
+  parse_stops();
   // calls the homepage function
   homepage();
 
 
   // freeing -- ignore
   free_departures();
+  free_bus_stops();
   return 0;
 }
