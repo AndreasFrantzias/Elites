@@ -14,22 +14,30 @@ time_t now = time(NULL);
 char bus_lines[6][60] = {"040 PEIRAIAS - SINTAGMA", "10 TZITZIFIES - XALANDRI", "224 KAISARIANI - EL. VENIZELOY", "250 PANEPISTIMIOUPOLI - ST. EVAGGELISMOS", "550 P. FALIRO - KIFISIA", "608 GALATSI - AKADIMIA - NEKR. ZOGRAFOY"};
 int*** departures = NULL;
 
+
 // IGNORE THESE FUNCTIONS -> IT JUST PARSES THE INFORMATION
 // FOUND IN THE .TXT FILES
 // -- IGNORE --
 
 int** parse_one_departure(char* filename) {
-  FILE *fp = fopen(filename);
+  FILE *fp = fopen(filename, "r");
   if (!fp) {
     fprintf(stderr, "File Error.\n");
   exit(1);
   }
   int** dep = malloc(150*sizeof(int*));
-  if (!departures) {
+  if (!dep) {
     fprintf(stderr, "Memory Allocation Error!\n");
     exit(1);
   }
-  int line=0, hour, min;
+  int line=1, hour, min;
+  dep[0] = malloc(2*sizeof(int));
+  if (!dep[0]) {
+    fprintf(stderr, "Memory Allocation Error!\n");
+    exit(1);
+  }
+  dep[0][0] = 1;
+  dep[0][1] = 0;
   while (fscanf(fp, "%d:%d", &hour, &min) == 2) {
     dep[line] = malloc(2*sizeof(int));
     if (!dep[line]) {
@@ -39,6 +47,14 @@ int** parse_one_departure(char* filename) {
     dep[line][0] = hour;
     dep[line++][1] = min;
   }
+  dep[line] = malloc(2*sizeof(int));
+  if (!dep[line]) {
+    fprintf(stderr, "Memory Allocation Error!\n");
+    exit(1);
+  }
+  dep[line][0] = hour;
+  dep[line][1] = min;
+  dep[0][1] = line;
   fclose(fp);
   return dep;
 }
@@ -65,7 +81,8 @@ void parse_departures() {
 
 void free_departures() {
   for (int i=0; i<11; i++) {
-    for (int j=0; j<150; j++) {
+    int help = departures[i][0][1];
+    for (int j=0; j<=help; j++) {
       free(departures[i][j]);
     }
     free(departures[i]);
@@ -80,7 +97,7 @@ char** parse_bus_stops() {
     fprintf(stderr, "Memory Allocation Error!\n");
     exit(1);
   }
-  FILE *fp = fopen("./bus_stops/stops_040.txt");
+  FILE *fp = fopen("./bus_stops/stops_040.txt", "r");
   if (!fp) {
     fprintf(stderr, "File Error.\n");
     exit(1);
@@ -95,15 +112,18 @@ char** parse_bus_stops() {
 // --- HELPER FUNCTIONS ---
 
 int find_direction() {
+  printf("---------------------------------------------------\n");
   printf("Choose Direction:\n Normal Direction: From Start to Terminal (Press 'N') OR Opposite Direction: From Terminal to Start (Press 'O')\n");
+  char direction;
   scanf(" %c", &direction);
-  if (c == 'O' || c == 'o') {
+  if (direction == 'O' || direction == 'o') {
     return 1;
-  } else if (c == 'N' || c == 'n') {
+  } else if (direction == 'N' || direction == 'n') {
     return 0;
   } else {
     printf("Wrong Input! Try again.\n");
     return find_direction();
+  }
 }
 
 int index_of_bus(int bus_choice, int direction) {
@@ -135,6 +155,9 @@ int index_of_bus(int bus_choice, int direction) {
     case 666:
       // begotten
       exit(666);
+    default:
+      fprintf(stderr, "There exists no such bus line!");
+      exit(1);
   }
 }
 
@@ -144,28 +167,40 @@ int index_of_bus(int bus_choice, int direction) {
 
 // FEATURE 0: PRINT BUS LINES (GENERAL)
 void print_bus_lines() {
+  printf("---------------------------------------------------\n");
   printf("Bus Lines:\n");
   for (int i=0; i < 7; i++) {
     printf("%s\n", bus_lines[i]);
   }
   printf("Write the number of the bus line you want to choose.\n");
+  printf("OR press 0 to go back.\n");
   return ;
 }
 
 // FEATURE 1: PRINT DEPARTURES
-void print_departures(int bus_line) {
-  
+void print_departures(int bus_index) {
+  printf("---------------------------------------------------\n");
+  int i = 1;
+  while (i < departures[bus_index][0][1]) {
+    printf("%d:%d\n", departures[bus_index][i][0], departures[bus_index][i++][1]);
+  }
+  printf("Press Enter to go back to the main menu...\n");
+  getchar();getc(stdin);
+  return ;
 }
 
 void departures_menu() {
   print_bus_lines();
   int bus_choice;
   scanf("%d", &bus_choice);
+  // go back if 0 is pressed
+  if (bus_choice == 0) return ;
   int direction = 0;
   if (bus_choice != 250 && bus_choice != 666) {
     direction = find_direction();
   }
-  print_departures(bus_choice);
+  int bus_index = index_of_bus(bus_choice, direction);
+  print_departures(bus_index);
   return ;
 }
 
@@ -175,16 +210,21 @@ void departures_menu() {
 
 // function for the printing of the home page
 void homepage() {
+  printf("---------------------------------------------------\n");
   printf("You are at the homepage of the OASA app.\n");
   printf("Choose an option:\n");
   printf("Bus Departures (Press 1) | Bus Stops Arrivals (Press 2) | YOUR NEW FEATURE(S) (Press 3(, 4, 5, ...)) \n");
+  printf("Press 0 to exit the app.\n");
   int choice;
   // user-input
   scanf("%d", &choice);
   // switch statement -> choice of the user
   switch (choice) {
+  case 0:
+    return ;
+    break;
   case 1:
-    // call departures function
+    departures_menu();
     break;
   case 2:
     // calls arrivals
@@ -196,9 +236,8 @@ void homepage() {
   default:
     printf("Wrong Input. Try again.\n");
     // calls the function itself again to print the above again
-    homepage();
-    break;
   }
+  homepage();
   // ends function and goes back to main
   return ;
 }
@@ -206,7 +245,7 @@ void homepage() {
 // main function
 int main() {
   // parsing -- ignore
-  
+  parse_departures();
   // calls the homepage function
   homepage();
 
@@ -214,11 +253,4 @@ int main() {
   // freeing -- ignore
   free_departures();
   return 0;
-
 }
-
-
-
-
-
-
