@@ -156,6 +156,14 @@ void free_bus_stops() {
   free(bus_stops);
 }
 
+void match_individual_line(char* filename) {
+  FILE *fp = fopen(filename, "r");
+}
+
+void match_stops_with_lines() {
+
+}
+
 // -- IGNORE END --
 
 // --- HELPER FUNCTIONS ---
@@ -306,6 +314,7 @@ int main() {
   // parsing -- ignore
   parse_departures();
   parse_stops();
+  match_stops_with_lines();
   // calls the homepage function
   homepage();
 
