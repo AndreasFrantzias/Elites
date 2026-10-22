@@ -3,6 +3,7 @@
 // i'm using them for stuff you must ignore
 #include <stdlib.h>
 #include <time.h>
+#include <unistd.h>
 
 /* GRABS LOCAL TIME AND CONVERTS TO HOURS AND MINUTES
 
@@ -161,13 +162,19 @@ int index_of_bus(int bus_choice, int direction) {
   }
 }
 
+void clearScreen()
+{
+  const char *CLEAR_SCREEN_ANSI = "\e[1;1H\e[2J";
+  write(STDOUT_FILENO, CLEAR_SCREEN_ANSI, 12);
+}
+
 // --- HELPER FUNCTIONS END ---
 
 // --- FEATURE FUNCTIONS ---
 
 // FEATURE 0: PRINT BUS LINES (GENERAL)
 void print_bus_lines() {
-  printf("---------------------------------------------------\n");
+  printf("\n---------------------------------------------------\n");
   printf("Bus Lines:\n");
   for (int i=0; i < 7; i++) {
     printf("%s\n", bus_lines[i]);
@@ -179,17 +186,19 @@ void print_bus_lines() {
 
 // FEATURE 1: PRINT DEPARTURES
 void print_departures(int bus_index) {
-  printf("---------------------------------------------------\n");
+  printf("\n---------------------------------------------------\n");
   int i = 1;
   while (i < departures[bus_index][0][1]) {
     printf("%d:%d\n", departures[bus_index][i][0], departures[bus_index][i++][1]);
   }
   printf("Press Enter to go back to the main menu...\n");
   getchar();getc(stdin);
+  clearScreen();
   return ;
 }
 
 void departures_menu() {
+  clearScreen();
   print_bus_lines();
   int bus_choice;
   scanf("%d", &bus_choice);
@@ -200,6 +209,7 @@ void departures_menu() {
     direction = find_direction();
   }
   int bus_index = index_of_bus(bus_choice, direction);
+  clearScreen();
   print_departures(bus_index);
   return ;
 }
@@ -210,7 +220,7 @@ void departures_menu() {
 
 // function for the printing of the home page
 void homepage() {
-  printf("---------------------------------------------------\n");
+  printf("\n---------------------------------------------------\n");
   printf("You are at the homepage of the OASA app.\n");
   printf("Choose an option:\n");
   printf("Bus Departures (Press 1) | Bus Stops Arrivals (Press 2) | YOUR NEW FEATURE(S) (Press 3(, 4, 5, ...)) \n");
@@ -237,6 +247,7 @@ void homepage() {
     printf("Wrong Input. Try again.\n");
     // calls the function itself again to print the above again
   }
+  clearScreen();
   homepage();
   // ends function and goes back to main
   return ;
