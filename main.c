@@ -2,6 +2,7 @@
 // the following includes have header files you won't need to use,
 // i'm using them for stuff you must ignore
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -15,6 +16,17 @@ time_t now = time(NULL);
 char bus_lines[6][60] = {"040 PEIRAIAS - SINTAGMA", "10 TZITZIFIES - XALANDRI", "224 KAISARIANI - EL. VENIZELOY", "250 PANEPISTIMIOUPOLI - ST. EVAGGELISMOS", "550 P. FALIRO - KIFISIA", "608 GALATSI - AKADIMIA - NEKR. ZOGRAFOY"};
 int*** departures = NULL;
 char*** bus_stops = NULL;
+int bus_indices_040[38];
+int bus_indices_040_return[38];
+int bus_indices_10[47];
+int bus_indices_10_return[41];
+int bus_indices_224[34];
+int bus_indices_224_return[34];
+int bus_indices_250[26];
+int bus_indices_550[56];
+int bus_indices_550_return[56];
+int bus_indices_608[41];
+int bus_indices_608_return[45];
 
 
 // IGNORE THESE FUNCTIONS -> IT JUST PARSES THE INFORMATION
@@ -106,7 +118,7 @@ void parse_stops() {
     exit(1);
   }
   int i = 0;
-  char* code, *name;
+  char code[70], name[70];
   while (fscanf(fp, "%s %s", code, name) == 2) {
     bus_stops[i] = malloc(2*sizeof(char*));
     if (!bus_stops[i]) {
@@ -118,13 +130,13 @@ void parse_stops() {
       fprintf(stderr, "Memory Allocation Error!\n");
       exit(1);
     }
-    bus_stops[i][0] = code;
+    strcpy(bus_stops[i][0], code);
     bus_stops[i][1] = malloc(60*sizeof(char));
     if (!bus_stops[i][1]) {
       fprintf(stderr, "Memory Allocation Error!\n");
       exit(1);
     }
-    bus_stops[i][1] = name;
+    strcpy(bus_stops[i][1], name);
     i++;
   }
   bus_stops[i] = malloc(2*sizeof(char*));
@@ -137,13 +149,13 @@ void parse_stops() {
       fprintf(stderr, "Memory Allocation Error!\n");
       exit(1);
     }
-    bus_stops[i][0] = code;
+    strcpy(bus_stops[i][0], code);
     bus_stops[i][1] = malloc(60*sizeof(char));
     if (!bus_stops[i][1]) {
       fprintf(stderr, "Memory Allocation Error!\n");
       exit(1);
     }
-    bus_stops[i][1] = name;
+    strcpy(bus_stops[i][1], name);
   return ;
 }
 
@@ -156,12 +168,47 @@ void free_bus_stops() {
   free(bus_stops);
 }
 
-void match_individual_line(char* filename) {
+int search_for_code_index(int code) {
+  for (int i = 0; i < 366; i++) {
+    if (atoi(bus_stops[i][0]) == code) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+void match_individual_line(char* filename, int* bus_indices) {
   FILE *fp = fopen(filename, "r");
+  if (!fp) {
+    fprintf(stderr, "File Opening Error!\n");
+    exit(1);
+  }
+  char code[70], name[70];
+  int i = 0;
+  while (fscanf(fp, "%s %s", code, name) == 2) {
+    int code_int = atoi(code);
+    int index = search_for_code_index(code_int);
+    if (index == -1) {
+      fprintf(stderr, "Error!\n");
+      exit(1);
+    }
+    bus_indices[i++] = index;
+  }
+  return ;
 }
 
 void match_stops_with_lines() {
-
+  match_individual_line("./bus_stops/stops_040.txt", bus_indices_040);
+  match_individual_line("./bus_stops/stops_040_return.txt", bus_indices_040_return);
+  match_individual_line("./bus_stops/stops_10.txt", bus_indices_10);
+  match_individual_line("./bus_stops/stops_10_return.txt", bus_indices_10_return);
+  match_individual_line("./bus_stops/stops_224.txt", bus_indices_224);
+  match_individual_line("./bus_stops/stops_224_return.txt", bus_indices_224_return);
+  match_individual_line("./bus_stops/stops_250.txt", bus_indices_250);
+  match_individual_line("./bus_stops/stops_550.txt", bus_indices_550);
+  match_individual_line("./bus_stops/stops_550_return.txt", bus_indices_550_return);
+  match_individual_line("./bus_stops/stops_608.txt", bus_indices_608);
+  match_individual_line("./bus_stops/stops_608_return.txt", bus_indices_608_return);
 }
 
 // -- IGNORE END --
@@ -315,6 +362,7 @@ int main() {
   parse_departures();
   parse_stops();
   match_stops_with_lines();
+  print_bus_stops_indices();
   // calls the homepage function
   homepage();
 
