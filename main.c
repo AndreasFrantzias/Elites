@@ -139,23 +139,7 @@ void parse_stops() {
     strcpy(bus_stops[i][1], name);
     i++;
   }
-  bus_stops[i] = malloc(2*sizeof(char*));
-    if (!bus_stops[i]) {
-      fprintf(stderr, "Memory Allocation Error!\n");
-      exit(1);
-    }
-    bus_stops[i][0] = malloc(60*sizeof(char));
-    if (!bus_stops[i][0]) {
-      fprintf(stderr, "Memory Allocation Error!\n");
-      exit(1);
-    }
-    strcpy(bus_stops[i][0], code);
-    bus_stops[i][1] = malloc(60*sizeof(char));
-    if (!bus_stops[i][1]) {
-      fprintf(stderr, "Memory Allocation Error!\n");
-      exit(1);
-    }
-    strcpy(bus_stops[i][1], name);
+  fclose(fp);
   return ;
 }
 
@@ -194,6 +178,7 @@ void match_individual_line(char* filename, int* bus_indices) {
     }
     bus_indices[i++] = index;
   }
+  fclose(fp);
   return ;
 }
 
@@ -210,6 +195,7 @@ void match_stops_with_lines() {
   match_individual_line("./bus_stops/stops_608.txt", bus_indices_608);
   match_individual_line("./bus_stops/stops_608_return.txt", bus_indices_608_return);
 }
+
 
 // -- IGNORE END --
 
@@ -362,7 +348,6 @@ int main() {
   parse_departures();
   parse_stops();
   match_stops_with_lines();
-  print_bus_stops_indices();
   // calls the homepage function
   homepage();
 
