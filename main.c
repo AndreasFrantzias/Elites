@@ -6,12 +6,7 @@
 #include <time.h>
 #include <unistd.h>
 
-/* GRABS LOCAL TIME AND CONVERTS TO HOURS AND MINUTES
 
-time_t now = time(NULL);
-  int hour = localtime(&now)->tm_hour;
-  int minute = localtime(&now)->tm_min;
-*/
 // GLOBAL VARIABLES
 char bus_lines[12][60] = {"040 PEIRAIAS - SINTAGMA", "040 SINTAGMA - PEIRAIAS", "10 TZITZIFIES - XALANDRI", "10 XALANDRI - TZITZIFIES", "224 KAISARIANI - EL. VENIZELOY", "224 EL. VENIZELOY - KAISARIANI", "250 PANEPISTIMIOUPOLI - ST. EVAGGELISMOS", "550 P. FALIRO - KIFISIA", "550 KIFISIA - P. FALIRO", "608 GALATSI - AKADIMIA - NEKR. ZOGRAFOY", "608 NEKR. ZOGRAFOY - AKADIMIA - GALATSI"};
 int*** departures = NULL;
@@ -257,6 +252,92 @@ void clearScreen()
   write(STDOUT_FILENO, CLEAR_SCREEN_ANSI, 12);
 }
 
+int* grab_bus_indices(int bus_index, int* num_stops) {
+  int* bus_indices;
+  switch (bus_index) {
+    case 0:
+      *num_stops = 38;
+      bus_indices = bus_indices_040;
+      break;
+    case 1:
+      *num_stops = 38;
+      bus_indices = bus_indices_040_return;
+      break;
+    case 2:
+      *num_stops = 47;
+      bus_indices = bus_indices_10;
+      break;
+    case 3:
+      *num_stops = 41;
+      bus_indices = bus_indices_10_return;
+      break;
+    case 4:
+      *num_stops = 34;
+      bus_indices = bus_indices_224;
+      break;
+    case 5:
+      *num_stops = 34;
+      bus_indices = bus_indices_224_return;
+      break;
+    case 6:
+      *num_stops = 26;
+      bus_indices = bus_indices_250;
+      break;
+    case 7:
+      *num_stops = 56;
+      bus_indices = bus_indices_550;
+      break;
+    case 8:
+      *num_stops = 56;
+      bus_indices = bus_indices_550_return;
+      break;
+    case 9:
+      *num_stops = 41;
+      bus_indices = bus_indices_608;
+      break;
+    case 10:
+      *num_stops = 45;
+      bus_indices = bus_indices_608_return;
+      break;
+
+    default:
+        fprintf(stderr, "There exists no such index!");
+        exit(1);
+        break;
+
+  }
+  return bus_indices;
+
+}
+
+int* find_bus_lines_for_stop(int stop_code, int *i) { 
+  int* bus_indices_list = malloc(12*sizeof(int));
+  if (!bus_indices_list) {
+    fprintf(stderr, "Memory Allocation Error!\n");
+    exit(1);
+  }
+  *i = 0;
+  for (int j=0; j<11; j++) {
+    int num = 0;
+    int* bus_indices_individual = grab_bus_indices(j, &num);
+    for (int k=0; k<num; k++) {
+      int check_bus_index = atoi(bus_stops[bus_indices_individual[k]][0]);
+      if (check_bus_index == stop_code) {
+        bus_indices_list[(*i)++] = j;
+        break;
+      }
+    }
+  }
+  return bus_indices_list;
+}
+
+int* grab_local_time() {
+  time_t now = time(NULL);
+  int hour = localtime(&now)->tm_hour;
+  int minute = localtime(&now)->tm_min;
+  return {hour, minute};
+}
+
 // --- HELPER FUNCTIONS END ---
 
 // --- FEATURE FUNCTIONS ---
@@ -270,8 +351,7 @@ void print_bus_lines() {
     int j = indices[i];
     printf("%s\n", bus_lines[j]);
   }
-  printf("Write the number of the bus line you want to choose.\n");
-  printf("OR press 0 to go back.\n");
+  printf("Write the number of the bus line you want to choose OR press 0 to go back.\n");
   return ;
 }
 
@@ -311,6 +391,31 @@ void departures_menu() {
 
 // FEATURE 2: PRINT ARRIVALS
 
+void individual_stop_arrivals(int stop_index) {
+  clearScreen();
+  int local_time[2] = grab_local_time();
+  printf("\n---------------------------------------------------\n");
+  printf("%s:\n", bus_stops[stop_index][1]);
+  // find which bus lines pass through this stop
+  int i = 0;
+  int stop_code = atoi(bus_stops[stop_index][0]);
+  int* bus_lines_that_pass_through_stop = find_bus_lines_for_stop(stop_code, &i);
+  printf("\n- - - - - - - - - - - - - - - - - - - - - - - - -\n");
+  for (int j=0; j<i; j++) {
+    int bus_index = bus_lines_that_pass_through_stop[j];
+    printf("%s \t in ...minutes\n", bus_lines[bus_index]);
+    printf("\n- - - - - - - - - - - - - - - - - - - - - - - - -\n");
+  }
+  free(bus_lines_that_pass_through_stop);
+  printf("Press R to refresh the arrivals OR press Enter to go back to the main menu...\n");
+  char choice;
+  getchar();choice = getc(stdin);
+  if (choice == 'R' || choice == 'r') {
+    individual_stop_arrivals(stop_index);
+  }
+  return ;
+}
+
 void print_arrivals(int bus_index, int* bus_indices, int num_stops) {
   clearScreen();
   printf("\n---------------------------------------------------\n");
@@ -321,8 +426,15 @@ void print_arrivals(int bus_index, int* bus_indices, int num_stops) {
     printf("%d. %s\n", i+1, bus_stops[stop_index][1]);
     i++;
   }
-  printf("Press Enter to go back to the main menu...\n");
-  getchar();getc(stdin);
+  printf("\n---------------------------------------------------\n");
+  printf("Enter the number of the stop you want to choose:\n");
+  scanf("%d", &i);
+  if (i < 1 || i > num_stops) {
+    printf("Wrong Input! Try again.\n");
+    print_arrivals(bus_index, bus_indices, num_stops);
+  }
+  int stop_index = bus_indices[i-1];
+  individual_stop_arrivals(stop_index);
   clearScreen();
   return ;
 }
@@ -378,6 +490,18 @@ void arrivals_menu() {
 }
 
 
+// FEATURE 3 -> YOUR TASK: ADD YOUR FEATURE FUNCTION HERE
+void your_awesome_feature_menu() {
+  clearScreen();
+  printf("\n---------------------------------------------------\n");
+  printf("ADD YOUR FEATURE HERE\n");
+  printf("Press Enter to go back to the main menu...\n");
+  getchar();getc(stdin);
+  clearScreen();
+  return ;
+}
+
+
 
 // --- FEATURE FUNCTIONS END ---
 
@@ -386,9 +510,8 @@ void homepage() {
   printf("\n---------------------------------------------------\n");
   printf("You are at the homepage of the OASA app.\n");
   printf("Choose an option:\n");
-  printf("Bus Departures (Press 1) | Bus Stops Arrivals (Press 2) | YOUR NEW FEATURE(S) (Press 3(, 4, 5, ...)) \n");
-  printf("Press 0 to exit the app.\n");
-  int choice;
+  printf("Bus Departures (Press 1) | Bus Stops Arrivals (Press 2) | YOUR NEW FEATURE (Press 3) | Press 0 to exit the app. \n");
+  int choice=0;
   // user-input
   scanf("%d", &choice);
   // switch statement -> choice of the user
@@ -403,12 +526,13 @@ void homepage() {
     arrivals_menu();
     break;
   case 3:
-    // TODO: ENTER YOUR FEATURE FUNCTION HERE
+    your_awesome_feature_menu();
     break;
   // default case -> in case the choice input is invalid
   default:
-    printf("Wrong Input. Try again.\n");
+    //fflush(stdin);
     // calls the function itself again to print the above again
+    printf("Wrong Input. Try again.\n");
   }
   clearScreen();
   homepage();
