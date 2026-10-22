@@ -4,28 +4,47 @@
 #include <stdlib.h>
 #include <time.h>
 
+/* GRABS LOCAL TIME AND CONVERTS TO HOURS AND MINUTES
+
+time_t now = time(NULL);
+  int hour = localtime(&now)->tm_hour;
+  int minute = localtime(&now)->tm_min;
+*/
 // global variable of the text of the bus lines
 char bus_lines[7][60] = {"040 PEIRAIAS - SINTAGMA", "10 TZITZIFIES - XALANDRI", "224 KAISARIANI - EL. VENIZELOY", "250 PANEPISTIMIOUPOLI - ST. EVAGGELISMOS", "550 P. FALIRO - KIFISIA", "608 GALATSI - AKADIMIA - NEKR. ZOGRAFOY", "E90 PEIRAIAS - PANEPISTIMIOYPOLI (SCHOLIKI EXPRESS)"};
+int*** departures = NULL;
 
 // IGNORE THESE FUNCTIONS -> IT JUST PARSES THE INFORMATION
 // FOUND IN THE .TXT FILES
 // -- IGNORE --
 
-char** parse_departures(char* filename) {
+int** parse_departures(char* filename) {
   FILE *fp = fopen(filename);
   if (!fp) {
     fprintf(stderr, "File Error.\n");
   exit(1);
   }
-  char** departures = malloc(130*sizeof(char*));
+  int** departures = malloc(150*sizeof(int*));
   if (!departures) {
     fprintf(stderr, "Memory Allocation Error!\n");
     exit(1);
   }
+  int line=0, hour, min;
+  while (fscanf(fp, "%d:%d", &hour, &min) == 2) {
+    departures[line] = malloc(2*sizeof(int));
+    if (!departures[line]) {
+      fprintf(stderr, "Memory Allocation Error!\n");
+      exit(1);
+    }
+    departures[line][0] = hour;
+    departures[line++][1] = min;
+  }
+  fclose(fp);
+  return departures;
 }
 
 char** parse_bus_stops() {
-  char** buslines = malloc(7*sizeof(char*));
+  char** buslines = malloc(14*sizeof(char*));
   if (!buslines) {
     fprintf(stderr, "Memory Allocation Error!\n");
     exit(1);
@@ -40,9 +59,39 @@ char** parse_bus_stops() {
   while ()
 }
 
-
-
 // -- IGNORE --
+
+// --- FEATURE FUNCTIONS ---
+
+// FEATURE 0: PRINT BUS LINES (GENERAL)
+void print_bus_lines() {
+  printf("Bus Lines:\n");
+  for (int i=0; i < 7; i++) {
+    printf("%s\n", bus_lines[i]);
+  }
+  printf("Write the number of the bus line you want to choose.\n");
+  return ;
+}
+
+// FEATURE 1: PRINT DEPARTURES
+void print_departures(int bus_line) {
+  
+}
+
+void departures_menu() {
+  print_bus_lines();
+  int bus_choice;
+  scanf("%d", &bus_choice);
+  switch (bus_choice) {
+    case 40:
+      
+  }
+  return ;
+}
+
+
+
+// --- FEATURE FUNCTIONS END ---
 
 // function for the printing of the home page
 void homepage() {
