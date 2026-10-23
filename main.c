@@ -5,7 +5,6 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
-
 #include "parser.h"
 #include "helpers.h"
 #include "api.h"
@@ -149,10 +148,53 @@ void arrivals_menu() {
 // TO THE BELOW FUNCTION!!! ---
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // FEATURE 3 -> YOUR TASK: ADD YOUR FEATURE FUNCTION HERE
+struct Journey {
+  char start_stop[60];
+  char end_stop[60];
+  int total_time;
+};
+
 void your_awesome_feature_menu() {
   clearScreen();
   printf("\n---------------------------------------------------\n");
-  printf("ADD YOUR FEATURE HERE\n");
+  printf("Line optimization\n");
+
+  struct Journey journey;
+
+  FILE *file = fopen("journey.txt", "w");
+  if (file == NULL) {
+    perror("Could not open journey.txt");
+    return;
+  }
+
+  printf("starting point: \n");
+  if (scanf("%59s", journey.start_stop) != 1) {
+    fprintf(stderr, "Invalid starting point.\n");
+    fclose(file);
+    return;
+  }
+  printf("end point: \n");
+  if (scanf("%59s", journey.end_stop) != 1) {
+    fprintf(stderr, "Invalid end point.\n");
+    fclose(file);
+    return;
+  }
+  printf("total time: \n");
+  if (scanf("%d", &journey.total_time) != 1) {
+    fprintf(stderr, "Invalid total time.\n");
+    fclose(file);
+    return;
+  }
+
+  if (fprintf(file, "%s %s %d\n", journey.start_stop, journey.end_stop,
+              journey.total_time) < 0) {
+    perror("Could not write journey.txt");
+  }
+  if (fclose(file) != 0) {
+    perror("Could not close journey.txt");
+  }
+
+  //calculate_journey();
   printf("Press Enter to go back to the main menu...\n");
   getchar();
   getc(stdin);
@@ -168,7 +210,7 @@ void homepage() {
   printf("\n---------------------------------------------------\n");
   printf("You are at the homepage of the OASA app.\n");
   printf("Choose an option:\n");
-  printf("Bus Departures (Press 1) | Bus Stops Arrivals (Press 2) | YOUR NEW FEATURE (Press 3) | Press 0 to exit the app. \n");
+  printf("Bus Departures (Press 1) | Bus Stops Arrivals (Press 2) | Line Optimization (Press 3) | Press 0 to exit the app. \n");
   int choice = 0;
   // user-input
   scanf("%d", &choice);
