@@ -1,0 +1,23 @@
+extern char bus_lines[12][60];
+extern int*** departures;
+extern char*** bus_stops;
+extern int bus_indices_040[38];
+extern int bus_indices_040_return[38];
+extern int bus_indices_10[47];
+extern int bus_indices_10_return[41];
+extern int bus_indices_224[34];
+extern int bus_indices_224_return[34];
+extern int bus_indices_250[26];
+extern int bus_indices_550[56];
+extern int bus_indices_550_return[56];
+extern int bus_indices_608[41];
+extern int bus_indices_608_return[45];
+
+int** parse_one_departure(char* filename);
+void parse_departures();
+void free_departures();
+void parse_stops();
+void free_bus_stops();
+int search_for_code_index(int code);
+void match_individual_line(char* filename, int* bus_indices);
+void match_stops_with_lines();
