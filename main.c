@@ -151,8 +151,38 @@ void arrivals_menu() {
 struct Journey {
   char start_stop[60];
   char end_stop[60];
-  int total_time;
+  int user_input_distance;
+  int estimated_distance;
 };
+
+struct Journey journey;
+
+int calculate_journey() {
+  // This function will calculate the journey based on the start and end stops
+  // For now, it just prints the journey details.
+  printf("Calculating journey from %s to %s with total time %d minutes.\n",
+         journey.start_stop, journey.end_stop, journey.user_input_distance);
+  return journey.user_input_distance; 
+}
+
+void score_journey() {
+  journey.estimated_distance = calculate_journey();
+  if(journey.user_input_distance < journey.estimated_distance){
+    printf("The route you provided is better than the estimated route.\n");
+  } else {
+    printf("The estimated route is better than the one you provided.\n");
+  }
+  int diff = 0;
+  diff = journey.user_input_distance - journey.estimated_distance;
+  sortby_difference_desc(diff);
+  printf("Scoring journey...\n");
+}
+
+void find_best_route(struct Journey journey) {
+  //Takes top 5 journeys and tries to find a better time 
+  printf("Finding best route from %s to %s...\n", journey.start_stop, journey.end_stop);
+  
+}
 
 void your_awesome_feature_menu() {
   clearScreen();
@@ -161,7 +191,7 @@ void your_awesome_feature_menu() {
 
   struct Journey journey;
 
-  FILE *file = fopen("journey.txt", "w");
+  FILE *file = fopen("journey.txt", "a");
   if (file == NULL) {
     perror("Could not open journey.txt");
     return;
@@ -180,21 +210,31 @@ void your_awesome_feature_menu() {
     return;
   }
   printf("total time: \n");
-  if (scanf("%d", &journey.total_time) != 1) {
+  if (scanf("%d", &journey.user_input_distance) != 1) {
     fprintf(stderr, "Invalid total time.\n");
     fclose(file);
     return;
   }
 
   if (fprintf(file, "%s %s %d\n", journey.start_stop, journey.end_stop,
-              journey.total_time) < 0) {
+              journey.user_input_distance) < 0) {
     perror("Could not write journey.txt");
   }
   if (fclose(file) != 0) {
     perror("Could not close journey.txt");
   }
 
-  //calculate_journey();
+  //estimated time to get there by googlemaps api compared to user inputted time
+  //compare(distance and by how much time it takes to get there)
+  calculate_journey();
+  //score by how much is the difference (diff = user_input_distance-estimated_distance)
+  //save by descending order in the file
+  score_journey();
+  //the system takes the top 5 and put it into a line optimization algorithm
+  //which in turn will give the best route to take (if its better than the one the user inputted)
+  find_best_route(struct Journey journey);
+
+
   printf("Press Enter to go back to the main menu...\n");
   getchar();
   getc(stdin);
