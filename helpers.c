@@ -41,7 +41,7 @@ int index_of_bus(int bus_choice, int direction) {
       if (direction) return 10;
       return 9;
     case 666:
-      fprintf(stderr, "The Creation Myth brought to life, the story of no less than the violent death of God and the (re)birth of nature on a barren earth.\n https://ok.ru/video/7921556065009\n");
+      fprintf(stderr, "BEGOTTEN (1989) \nThe Creation Myth brought to life, the story of no less than the violent death of God and the (re)birth of nature on a barren earth.\n https://ok.ru/video/7921556065009\n");
       exit(666);
     default:
       fprintf(stderr, "There exists no such bus line!");
